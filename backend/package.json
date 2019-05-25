@@ -1,0 +1,21 @@
+{
+  "name": "vuechat",
+  "version": "0.0.1",
+  "description": "Real-time Chat with VueJS, Express and SocketIO",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Chat",
+    "Real-time",
+    "VueJS",
+    "Express",
+    "SocketIO"
+  ],
+  "author": "Sami Lazreg @xcitic",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.0"
+  }
+}
