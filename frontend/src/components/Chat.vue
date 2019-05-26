@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="card-footer">
-      <form @submit.prevent="sendMessage">
+      <form>
         <div class="form-group">
           <label for="user">User:</label>
           <input type="text" v-model="user" class="form-control">
@@ -21,7 +21,7 @@
           <label for="message">Message:</label>
           <input type="text" v-model="message" class="form-control">
         </div>
-        <button type="submit" class="btn btn-success">Send</button>
+        <button @click.prevent="sendMessage" class="btn btn-success">Send</button>
       </form>
     </div>
   </div>
@@ -29,6 +29,7 @@
 
 <script>
 import io from 'socket.io-client'
+const socket = io('localhost:3000')
 
 export default {
   name: 'Chat',
@@ -36,26 +37,23 @@ export default {
     return {
       user: '',
       message: '',
-      messages: [],
-      socket: io('localhost:3000')
+      messages: []
     }
   },
 
   mounted () {
-    this.socket.on('MESSAGE', data => {
+    socket.on('MESSAGE', data => {
       this.messages = [...this.messages, data]
     })
   },
 
   methods: {
-    sendMessage (e) {
-      e.preventDefault()
-
-      this.socket.emit('SEND_MESSAGE', {
+    sendMessage () {
+      socket.emit('SEND_MESSAGE', {
         user: this.user,
         message: this.message
       })
-        .then(this.message = '')
+      this.message = ''
     }
   }
 }
