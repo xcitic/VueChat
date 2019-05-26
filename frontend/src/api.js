@@ -1,17 +1,17 @@
 import axios from 'axios'
 
-// Can use different clients for different API endpoints (seperate each service into microservices)
-const client = axios.create({
+// Use different endpoints for different API endpoints (seperate each service into microservices)
+const endpoint = axios.create({
   baseURL: 'http://localhost:3000/api/',
   json: true
 })
 
 export default {
   // Base api call method
-  async execute (method, resource, data) {
-    // TODO pass the JWT token
+  async apiCall (method, resource, data) {
+    // TODO pass the authToken
     let authToken = 'tempToken'
-    return client({
+    return endpoint({
       method,
       url: resource,
       data,
@@ -25,14 +25,14 @@ export default {
   // All the API calls
 
   login (data) {
-    return this.execute('post', '/login', data)
+    return this.apiCall('post', '/login', data)
   },
 
   logout () {
-    return this.execute('get', '/logout')
+    return this.apiCall('get', '/logout')
   },
 
   getUser () {
-    return this.execute('get', '/user')
+    return this.apiCall('get', '/user')
   }
 }

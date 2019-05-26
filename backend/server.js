@@ -130,6 +130,7 @@ app.get("/api/user", authMiddleware, (req, res) => {
 
 // setup server instance
 const PORT = config.APP_PORT || 3001 || 3002
+const NODE_ENV = config.NODE_ENV || 'development'
 
 const server = app.listen(PORT, () => {
   console.log('Server is running on localhost:' + PORT)
