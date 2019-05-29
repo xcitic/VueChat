@@ -1,0 +1,13 @@
+version: '3.3'
+
+services:
+  database:
+    image: 'postgres'
+    container_name: 'postgres-db'
+    restart: always
+    environment:
+      POSTGRES_DB: chat-application
+      POSTGRES_USER: chat-application
+      POSTGRES_PASSWORD: this_p4assw0rd-??-is_3s34y
+    ports:
+      - '9876:5432'

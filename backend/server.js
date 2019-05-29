@@ -1,21 +1,27 @@
 'use strict'
-
-const cors = require('cors')
-
-// create express instance
+// core imports
+require('dotenv').config()
 const express = require('express')
-const app = express()
 
 
 // package library imports
 const cookieSession = require('cookie-session')
 const bodyParser = require('body-parser')
-const passport = require('passport')
-const LocalStrategy = require('passport-local').Strategy
+const cors = require('cors')
 
-
-// import configs
+// config imports
 const config = require('./config/localServer')
+
+// local imports
+const passport = require('./auth/passport')
+const authMiddleware = require('./auth/middleware')
+const db = require('./db/queries')
+// const database = require('./db/postgres')
+
+// create express instance
+const app = express()
+
+
 
 // const DATA = require('./data/database.json')
 let users = [
@@ -42,56 +48,9 @@ app.use(cookieSession({
   maxAge: 7 * 24 * 60 * 60 * 1000 // cookie expires in 7 days
 }));
 
-
-
 // Authentication
 app.use(passport.initialize())
 app.use(passport.session())
-
-passport.use(
-  new LocalStrategy(
-    {
-      usernameField: "email",
-      passwordField: "password"
-    },
-
-    (username, password, done) => {
-      let user = users.find((user) => {
-        return user.email === username && user.password === password
-      })
-
-      if (user) {
-        done(null, user)
-      }
-      else {
-        done(null, false, { message: 'Wrong username or password'})
-      }
-    }
-  )
-);
-
-passport.serializeUser((user, done) => {
-  done(null, user.id)
-});
-
-passport.deserializeUser((id, done) => {
-  let user = users.find(user => {
-    return user.id === id
-  });
-
-  done(null, user)
-})
-
-
-// Auth middleware
-const authMiddleware = (req, res, next) => {
-  if (!req.isAuthenticated()) {
-    res.status(401).send('Unauthenticated')
-  }
-  else {
-    return next()
-  }
-}
 
 // API
 app.post("/api/login", cors(), (req, res, next) => {
@@ -116,6 +75,8 @@ app.get("/api/logout", (req, res) => {
 
   return res.send()
 });
+
+app.get('/api/users', db.getUsers)
 
 app.get("/api/user", authMiddleware, (req, res) => {
   let user = users.find(user => {
