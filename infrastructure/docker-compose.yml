@@ -2,12 +2,19 @@ version: '3.3'
 
 services:
   database:
+    env_file:
+      - .env
     image: 'postgres'
-    container_name: 'postgres-db'
+    volumes:
+      - db-data:/var/lib/posgresql/data
+    container_name: $DB_HOST
     restart: always
     environment:
-      POSTGRES_DB: chat-application
-      POSTGRES_USER: chat-application
-      POSTGRES_PASSWORD: this_p4assw0rd-??-is_3s34y
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
     ports:
-      - '9876:5432'
+      - $DB_PORT:5432
+
+volumes:
+  db-data:
