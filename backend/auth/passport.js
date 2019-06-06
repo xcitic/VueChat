@@ -1,6 +1,6 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
-
+const users = require('../db/queries').getUserByEmail
 
 passport.use(
   new LocalStrategy(
@@ -29,6 +29,8 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
+
+
   let user = users.find(user => {
     return user.id === id
   });

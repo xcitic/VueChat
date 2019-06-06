@@ -22,23 +22,6 @@ const db = require('./db/queries')
 const app = express()
 
 
-
-// const DATA = require('./data/database.json')
-let users = [
-  {
-    id: 1,
-    name: "Samuel",
-    email: "test@test.test",
-    password: "password"
-  },
-  {
-    id: 2,
-    name: "Jackson",
-    email: "admin@admin.admin",
-    password: "password"
-  }
-];
-
 // Bind libraries to the express instance
 app.use(cors())
 app.use(bodyParser.json())
@@ -48,11 +31,18 @@ app.use(cookieSession({
   maxAge: 7 * 24 * 60 * 60 * 1000 // cookie expires in 7 days
 }));
 
+// express-sessions
+// app.use(session({
+//   secret: process.env.SECRET_KEY,
+//   resave: false,
+//   saveUninitialized: true,
+// }));
+
 // Authentication
 app.use(passport.initialize())
 app.use(passport.session())
 
-// API
+//API
 app.post("/api/login", cors(), (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) {
@@ -68,15 +58,6 @@ app.post("/api/login", cors(), (req, res, next) => {
   })(req, res, next);
 });
 
-app.get("/api/logout", (req, res) => {
-  req.logout();
-
-  console.log("Successfully logged out")
-
-  return res.send()
-});
-
-app.get('/api/users', db.getUsers)
 
 app.get("/api/user", authMiddleware, (req, res) => {
   let user = users.find(user => {
@@ -87,6 +68,17 @@ app.get("/api/user", authMiddleware, (req, res) => {
 
   res.send({ user: user })
 });
+
+app.get("/api/logout", (req, res) => {
+  req.logout();
+
+  console.log("Successfully logged out")
+
+  return res.send()
+});
+
+app.get('/api/users', db.getUsers)
+
 
 
 // setup server instance
