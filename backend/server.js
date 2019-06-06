@@ -92,12 +92,40 @@ const server = app.listen(PORT, () => {
 
 
 // setup socket.io
-const socketIO = require('socket.io')(server)
+const io = require('socket.io')(server)
 
-socketIO.on('connection', socket => {
-  console.log(socket.id)
-  // when receive SEND_MESSAGE from frontend, emit MESSAGE back
-  socket.on('SEND_MESSAGE', data => {
-    socketIO.emit('MESSAGE', data)
+let socketClients = 0
+
+io.on('connection', onConnect);
+
+function onConnect (socket) {
+  socketClients++
+  console.log('a client joined')
+  // when user sends join room, set their room
+  socket.on('join_room', room => {
+    console.log('Joining : ' + room)
+    socket.join(room)
+  });
+
+  // when user sends a message, broadcast to the room they are in
+  socket.on('send_message', data => {
+    console.log(data)
+    io.in(data.room).emit('receive_message', data)
+  });
+
+  socket.on('typing', data => {
+    console.log(data.user + ' is typing')
+    socket.in(data.room).emit('userIsTyping', data.user)
   })
-})
+
+  socket.on('notTyping', data => {
+    console.log(data.user + ' stopped typing')
+    socket.in(data.room).emit('userIsNotTyping', data.user)
+  })
+
+  // when a user leaves let us know
+  socket.on('disconnect', () => {
+    socketClients--
+    console.log('a client has disconnected')
+  })
+}

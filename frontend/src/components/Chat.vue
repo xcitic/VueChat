@@ -2,26 +2,29 @@
   <div class="card mt-3">
     <div class="card-body">
       <div class="card-title">
-        <h3>Chat</h3>
+        <h3>Chat Group</h3>
         <hr/>
       </div>
       <div class="card-body">
         <div class="messages" v-for="(msg, index) in messages" :key="index">
           <p><span class="font-weight-bold">{{ msg.user }}</span> {{ msg.message }}</p>
         </div>
+        <div class="isTyping" v-if="userIsTyping !== null">
+          {{userIsTyping}} is typing...
+        </div>
       </div>
     </div>
     <div class="card-footer">
-      <form>
+      <form @submit.preventDefault="sendMessage" >
         <div class="form-group">
           <label for="user">User:</label>
           <input type="text" v-model="user" class="form-control">
         </div>
         <div class="form-group pb-3">
           <label for="message">Message:</label>
-          <input type="text" v-model="message" class="form-control">
+          <input type="text" v-model="message" @input="imTyping" class="form-control">
         </div>
-        <button @click.prevent="sendMessage" class="btn btn-success">Send</button>
+        <button type="submit" class="btn btn-success">Send</button>
       </form>
     </div>
   </div>
@@ -29,31 +32,85 @@
 
 <script>
 import io from 'socket.io-client'
+import { mapState } from 'vuex'
+
 const socket = io('localhost:3000')
 
 export default {
   name: 'Chat',
   data () {
     return {
-      user: '',
       message: '',
-      messages: []
+      user: '',
+      userIsTyping: null,
+      typingSent: false
     }
   },
 
+  computed: {
+    ...mapState({
+      room: state => state.chat.room,
+      messages: state => state.chat.messages
+    })
+  },
+
   mounted () {
-    socket.on('MESSAGE', data => {
-      this.messages = [...this.messages, data]
+    // join the right room
+    socket.emit('join_room', this.room)
+    // when a message is broadcasted update the messages array
+    socket.on('receive_message', msg => {
+      this.$store.commit('chat/updateMessages', msg)
+    })
+    // when another user is typing, display it
+    socket.on('userIsTyping', user => {
+      this.userIsTyping = user
+    })
+    // when the user stops typing, or deletes the content display it
+    socket.on('userIsNotTyping', user => {
+      this.userIsTyping = null
     })
   },
 
   methods: {
-    sendMessage () {
-      socket.emit('SEND_MESSAGE', {
+    sendMessage (e) {
+      e.preventDefault()
+      this.broadcast()
+    },
+
+    async broadcast () {
+      socket.emit('send_message', {
+        room: this.room,
         user: this.user,
         message: this.message
       })
+      await this.clearMessage()
+    },
+
+    clearMessage () {
       this.message = ''
+      this.imNotTyping()
+    },
+
+    imTyping () {
+      if (this.message) {
+        if (!this.typingSent) {
+          socket.emit('typing', {
+            room: this.room,
+            user: this.user
+          })
+          this.typingSent = true
+        }
+      } else {
+        this.imNotTyping()
+      }
+    },
+
+    imNotTyping () {
+      socket.emit('notTyping', {
+        room: this.room,
+        user: this.user
+      })
+      this.typingSent = false
     }
   }
 }
