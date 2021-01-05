@@ -14,7 +14,7 @@
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "socket.io-client": "^2.2.0",
     "vue": "^2.5.2",
     "vue-cookies": "^1.5.13",
